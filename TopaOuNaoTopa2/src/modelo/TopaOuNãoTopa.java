@@ -49,15 +49,15 @@ public class TopaOuNãoTopa implements Runnable{
         Collections.shuffle(this.listaMaletas);
     }
 
-    public Boolean abrirMaleta(int posicao){
+    public String abrirMaleta(int posicao){
         if (posicao >= 0 && posicao < listaMaletas.size()){
             if(!this.listaMaletas.get(posicao).isAberto()) {
             	this.listaMaletas.get(posicao).abrirMaleta();
                 this.rodadaAtual++;
-                return true; 
+                return "Maleta da Posicao: "+posicao+" aberta"; 
             }
         }
-        return false;
+        return "Maleta já aberta ou posicao inválida";
     }
     
     private double acharUltimaMaleta() {
@@ -102,12 +102,11 @@ public class TopaOuNãoTopa implements Runnable{
 				out.println("----- A rodada atual "+this.rodadaAtual+" ----- ");
 				out.println(this.imprimirTabelaMaletas());
 				out.println("Escolha uma maleta para abrir");
-				Boolean malaAberta;
-				do{
-					int numMaleta = in.nextInt();
-					malaAberta = abrirMaleta(numMaleta);
+				
+				int numMaleta = in.nextInt();
+				out.println(abrirMaleta(numMaleta));
 					
-				}while(!malaAberta);
+				
 				setOfertaDoBanco();
 				out.println("A oferta do banco é:" +this.ofertaDoBanco);
 				out.println("Você topa ou não topa? (1 para sim 2 para não)");

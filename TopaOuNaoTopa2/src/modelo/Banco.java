@@ -11,7 +11,7 @@ public class Banco {
 		int restanteMeletas = (int) maletas.stream().filter(a -> !a.isAberto()).count();
 		
 		double mediaValores = valorTotalMaletas / restanteMeletas;
-	    double oferta = mediaValores * (1 - (rodadaAtual+1 / 10.0));
+	    double oferta = mediaValores * (1 - (rodadaAtual / 10.0));
 		
 		return oferta;
 	}
