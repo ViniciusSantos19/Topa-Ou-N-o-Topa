@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import modelo.Banco;
 import modelo.Maleta;
@@ -14,9 +15,13 @@ public class TopaOuNãoTopa implements Runnable{
     private Socket client;
     private List<Maleta> listaMaletas;
     private int rodadaAtual;
-    private int maletaDoJogador;
     private Banco banco;
     private int maxRodadas = 25;
+    private double ofertaDoBanco;
+    
+    public void setOfertaDoBanco() {
+    	this.ofertaDoBanco = banco.calcularOferta(listaMaletas, rodadaAtual);
+    }
     
     public TopaOuNãoTopa(Socket client) {
         this.client = client;
@@ -44,11 +49,26 @@ public class TopaOuNãoTopa implements Runnable{
         Collections.shuffle(this.listaMaletas);
     }
 
-    public void abrirMaleta(int posicao){
+    public Boolean abrirMaleta(int posicao){
         if (posicao >= 0 && posicao < listaMaletas.size()){
-            this.listaMaletas.get(posicao).abrirMaleta();
-            this.rodadaAtual++;
+            if(!this.listaMaletas.get(posicao).isAberto()) {
+            	this.listaMaletas.get(posicao).abrirMaleta();
+                this.rodadaAtual++;
+                return true; 
+            }
         }
+        return false;
+    }
+    
+    private double acharUltimaMaleta() {
+    	 Optional<Maleta> maletaFechada = listaMaletas.stream()
+    		        .filter(maleta -> !maleta.isAberto())
+    		        .findFirst();
+
+    	 if (maletaFechada.isPresent()) {
+    		     return maletaFechada.get().getValor();
+    	 }
+    		   return 0;
     }
 
     private void reiniciar(){
@@ -61,11 +81,11 @@ public class TopaOuNãoTopa implements Runnable{
         int numColunasImpares = 6;
         StringBuffer str = new StringBuffer();
         for(int linha =0; linha < 4; linha++){
-            System.out.println();
+            str.append("\n");
             for (int coluna = 0; coluna < (linha % 2 == 0 ? numColunasPares : numColunasImpares); coluna++) {
                 int index = linha * (linha % 2 == 0 ? numColunasPares : numColunasImpares) + coluna;
                 if (index < listaMaletas.size()){
-                	str.append("| "+this.listaMaletas.get(index).getMascara()+" |, "+"\n");
+                	str.append("| "+this.listaMaletas.get(index).getMascara()+" |, ");
                 }
 
             }
@@ -82,9 +102,25 @@ public class TopaOuNãoTopa implements Runnable{
 				out.println("----- A rodada atual "+this.rodadaAtual+" ----- ");
 				out.println(this.imprimirTabelaMaletas());
 				out.println("Escolha uma maleta para abrir");
-				int numMaleta = in.nextInt();
-				abrirMaleta(numMaleta);
-				out.println("A oferta do banco é:" +this.banco.calcularOferta(listaMaletas, numMaleta));
+				Boolean malaAberta;
+				do{
+					int numMaleta = in.nextInt();
+					malaAberta = abrirMaleta(numMaleta);
+					
+				}while(!malaAberta);
+				setOfertaDoBanco();
+				out.println("A oferta do banco é:" +this.ofertaDoBanco);
+				out.println("Você topa ou não topa? (1 para sim 2 para não)");
+				int simOuNao = in.nextInt();
+				
+				if(simOuNao == 1) {
+					out.println("Você recebeu "+this.ofertaDoBanco+" reais");
+					break;
+				}
+				
+				if(rodadaAtual == 25) {
+					out.println("Você recebeu "+this.acharUltimaMaleta());
+				}
 				
 			}
 		} catch (IOException e) {

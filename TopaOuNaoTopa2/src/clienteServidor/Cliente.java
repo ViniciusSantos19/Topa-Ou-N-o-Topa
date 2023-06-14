@@ -1,4 +1,4 @@
-package cliente;
+package clienteServidor;
 
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -13,9 +13,16 @@ public class Cliente {
             PrintWriter out = new PrintWriter(client.getOutputStream(),true);
 
             while (true) {
-                System.out.println("Digite o número da maleta que você gostaria de abrir: ");
+                out.flush();
+                while(in.hasNextLine()) {
+                	 String serverMessage = in.nextLine();
+                	System.out.println(serverMessage);
+                	if (serverMessage.equals("Escolha uma maleta para abrir" ) || serverMessage.equals("Você topa ou não topa? (1 para sim 2 para não)")) {
+                        break;
+                    }
+                }
                 out.println(inUser.nextInt());
-                System.out.println(in.nextLine());
+                
             }
 
         } catch (Exception e) {
